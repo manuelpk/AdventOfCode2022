@@ -31,7 +31,7 @@ namespace AdventOfCode2022.Day11
                 }
                 else if (i.Trim().StartsWith("Starting"))
                 {
-                    monkey.Items = Regex.Matches(i, @"\d+").Select(x => decimal.Parse(x.Value)).ToList();
+                    monkey.Items = Regex.Matches(i, @"\d+").Select(x => long.Parse(x.Value)).ToList();
                 }
                 else if (i.Trim().StartsWith("Operation"))
                 {
@@ -86,37 +86,37 @@ namespace AdventOfCode2022.Day11
             Console.WriteLine($"Level: {level}");
         }
 
-        private decimal Calculate(string op, decimal itemValue, string operationValue)
+        private long Calculate(string op, long itemValue, string operationValue)
         {
             var value = operationValue == "old" ? itemValue : int.Parse(operationValue);
 
             if (op == "*")
             {
-                return Math.Floor((itemValue * value) / 3);
+                return (long)Math.Floor((itemValue * value) / 3d);
             }
             else
             {
-                return Math.Floor((itemValue + value) / 3);
+                return (long)Math.Floor((itemValue + value) / 3d);
             }
         }
-    }
 
-    public class Monkey
-    {
-        public int MonkeyId { get; set; }
+        public class Monkey
+        {
+            public int MonkeyId { get; set; }
 
-        public List<decimal> Items { get; set; }
+            public List<long> Items { get; set; }
 
-        public string Operator { get; set; }
+            public string Operator { get; set; }
 
-        public string OperationValue { get; set; }
+            public string OperationValue { get; set; }
 
-        public int DivisibleBy { get; set; }
+            public int DivisibleBy { get; set; }
 
-        public int IfTrueMonkeyId { get; set; }
+            public int IfTrueMonkeyId { get; set; }
 
-        public int IfFalseMonkeyId { get; set; }
+            public int IfFalseMonkeyId { get; set; }
 
-        public decimal InspectionCount { get; set; } = 0;
+            public long InspectionCount { get; set; } = 0;
+        }
     }
 }

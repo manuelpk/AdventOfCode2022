@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -31,7 +32,7 @@ namespace AdventOfCode2022.Day11
                 }
                 else if (i.Trim().StartsWith("Starting"))
                 {
-                    monkey.Items = Regex.Matches(i, @"\d+").Select(x => decimal.Parse(x.Value)).ToList();
+                    monkey.Items = Regex.Matches(i, @"\d+").Select(x => ulong.Parse(x.Value)).ToList();
                 }
                 else if (i.Trim().StartsWith("Operation"))
                 {
@@ -56,27 +57,27 @@ namespace AdventOfCode2022.Day11
 
             for (int i = 0; i < 10000; i++)
             {
-                foreach (var m in monkeys.ToList())
+                foreach (var m in monkeys)
                 {
-                    foreach (var item in m.Items.ToList())
+                    foreach (var item in m.Items)
                     {
                         m.InspectionCount++;
 
                         var newValue = Calculate(m.Operator, item, m.OperationValue);
 
-                        var check = newValue % m.DivisibleBy == 0;
+                        var check = newValue % (ulong)m.DivisibleBy == 0;
 
                         if (check)
                         {
-                            monkeys.FirstOrDefault(x => x.MonkeyId == m.IfTrueMonkeyId)?.Items.Add(newValue);
+                            monkeys.First(x => x.MonkeyId == m.IfTrueMonkeyId).Items.Add(newValue);
                         }
                         else
                         {
-                            monkeys.FirstOrDefault(x => x.MonkeyId == m.IfFalseMonkeyId)?.Items.Add(newValue);
+                            monkeys.First(x => x.MonkeyId == m.IfFalseMonkeyId).Items.Add(newValue);
                         }
-
-                        m.Items.Remove(item);
                     }
+
+                    m.Items.RemoveRange(0, m.Items.Count);
                 }
             }
 
@@ -86,18 +87,37 @@ namespace AdventOfCode2022.Day11
             Console.WriteLine($"Level: {level}");
         }
 
-        private decimal Calculate(string op, decimal itemValue, string operationValue)
+        private ulong Calculate(string op, ulong itemValue, string operationValue)
         {
-            var value = operationValue == "old" ? itemValue : decimal.Parse(operationValue);
+            var value = operationValue == "old" ? itemValue : ulong.Parse(operationValue);
 
             if (op == "*")
             {
-                return (itemValue * value);
+                return itemValue * value;
             }
             else
             {
-                return (itemValue + value);
+                return itemValue + value;
             }
+        }
+
+        public class Monkey
+        {
+            public int MonkeyId { get; set; }
+
+            public List<ulong> Items { get; set; }
+
+            public string Operator { get; set; }
+
+            public string OperationValue { get; set; }
+
+            public int DivisibleBy { get; set; }
+
+            public int IfTrueMonkeyId { get; set; }
+
+            public int IfFalseMonkeyId { get; set; }
+
+            public long InspectionCount { get; set; } = 0;
         }
     }
 }
