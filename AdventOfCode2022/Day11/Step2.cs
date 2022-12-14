@@ -12,7 +12,7 @@ namespace AdventOfCode2022.Day11
     {
         public Step2()
         {
-            var input = File.ReadAllLines("Day11/SampleInput.txt");
+            var input = File.ReadAllLines("Day11/Step1Input.txt");
 
             var monkeys = new List<Monkey>();
 
@@ -55,15 +55,23 @@ namespace AdventOfCode2022.Day11
 
             monkeys.Add(monkey);
 
+            ulong woswasi = 1;
+            foreach (var m in monkeys)
+            {
+                woswasi *= (ulong)m.DivisibleBy;
+            }
+
             for (int i = 0; i < 10000; i++)
             {
                 foreach (var m in monkeys)
                 {
-                    foreach (var item in m.Items)
+                    foreach (var item in m.Items.ToList())
                     {
                         m.InspectionCount++;
 
                         var newValue = Calculate(m.Operator, item, m.OperationValue);
+
+                        newValue %= woswasi;
 
                         var check = newValue % (ulong)m.DivisibleBy == 0;
 
@@ -75,9 +83,9 @@ namespace AdventOfCode2022.Day11
                         {
                             monkeys.First(x => x.MonkeyId == m.IfFalseMonkeyId).Items.Add(newValue);
                         }
-                    }
 
-                    m.Items.RemoveRange(0, m.Items.Count);
+                        m.Items.Remove(item);
+                    }
                 }
             }
 
