@@ -4,7 +4,7 @@
     {
         static void Main(string[] args)
         {
-            var bla = new Day11.Step2();
+            var bla = new Day12.Step1();
 
             Console.ReadKey();
         }
