@@ -11,7 +11,6 @@ namespace AdventOfCode2022.Day12
     {
         Dictionary<(int, int), int> allPoints = new Dictionary<(int, int), int>();
         Dictionary<(int, int), int> usedSteps = new Dictionary<(int, int), int>();
-        //List<Route> routes = new List<Route>();
 
         public Step1()
         {
