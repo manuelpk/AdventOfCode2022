@@ -20,58 +20,6 @@ namespace AdventOfCode2022.Day13
 
             foreach (var p in pairs)
             {
-                var leftData = p.Split(Environment.NewLine)[0];
-                var rightData = p.Split(Environment.NewLine)[1];
-
-                var cleanedLeftData = leftData.Replace("[", "").Replace("]", "").Split(",");
-                var cleanedRightData = rightData.Replace("[", "").Replace("]", "").Split(",");
-
-                if (!cleanedLeftData.Any() && cleanedRightData.Any())
-                {
-                    var leftSquareBrackets = leftData.Count(x => x == '[');
-
-                    var rightSquareBrackets = leftData.Count(x => x == '[');
-
-                    if (leftSquareBrackets <= rightSquareBrackets)
-                    {
-                        rightOrderCount++;
-                    }
-                }
-                else
-                {
-                    var rightOrder = true;
-
-                    for (int idx = 0; idx < cleanedLeftData.Length; idx++)
-                    {
-                        if (idx >= cleanedRightData.Length)
-                        {
-                            rightOrder = false;
-                            break;
-                        }
-
-                        if (string.IsNullOrEmpty(cleanedLeftData[idx]) && string.IsNullOrEmpty(cleanedRightData[idx]))
-                        {
-                            break;
-                        }
-
-                        if (string.IsNullOrEmpty(cleanedLeftData[idx]) && !string.IsNullOrEmpty(cleanedRightData[idx]))
-                        {
-                            rightOrder = false;
-                            break;
-                        }
-
-                        if (int.Parse(cleanedLeftData[idx]) > int.Parse(cleanedRightData[idx]))
-                        {
-                            rightOrder = false;
-                            break;
-                        }
-                    }
-
-                    if (rightOrder)
-                    {
-                        rightOrderCount++;
-                    }
-                }
             }
 
             Console.WriteLine($"RightOrderCount: {rightOrderCount}");
