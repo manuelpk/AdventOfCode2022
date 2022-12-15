@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,29 +10,15 @@ namespace AdventOfCode2022.Day12
     public class Step1
     {
         Dictionary<(int, int), int> allPoints = new Dictionary<(int, int), int>();
-        List<Route> routes = new List<Route>();
-        int maxX;
-        int maxY;
+        Dictionary<(int, int), int> usedSteps = new Dictionary<(int, int), int>();
+        //List<Route> routes = new List<Route>();
 
         public Step1()
         {
-            var input = File.ReadAllLines("Day12/SampleInput.txt").Reverse().ToList();
+            var input = File.ReadAllLines("Day12/Step1Input.txt").Reverse().ToList();
 
-            var startRow = input.First(x => x.Contains("S"));
-            var startRowIndex = input.ToList().IndexOf(startRow);
-
-            var startColumnIndex = startRow.IndexOf("S");
-
-            (int x, int y) startPosition = new(startColumnIndex, startRowIndex);
-
-            var endRow = input.First(x => x.Contains("E"));
-            var endRowIndex = input.ToList().IndexOf(endRow);
-
-            var endColumnIndex = endRow.IndexOf("E");
-
-            (int x, int y) endPosition = new(endColumnIndex, endRowIndex);
-
-            //char.ToUpper(alphabet[0]) - 64
+            (int x, int y) startPosition = new(0, 0);
+            (int x, int y) endPosition = new(0, 0);
 
             var rowIndex = 0;
 
@@ -41,10 +28,19 @@ namespace AdventOfCode2022.Day12
 
                 foreach (var c in i)
                 {
+                    if (c == 'S')
+                    {
+                        startPosition = new(colIndex, rowIndex);
+                    }
+
+                    if (c == 'E')
+                    {
+                        endPosition = new(colIndex, rowIndex);
+                    }
+
                     char current = c == 'S' ? 'a' : c == 'E' ? 'z' : c;
 
-                    var charValue = c == 'S' ? 0 : c == 'E' ? 27 : char.ToUpper(current) - 64;
-                    allPoints.Add((colIndex, rowIndex), charValue);
+                    allPoints.Add((colIndex, rowIndex), c == 'S' ? 1 : c == 'E' ? 26 : char.ToUpper(current) - 64);
 
                     colIndex++;
                 }
@@ -52,107 +48,48 @@ namespace AdventOfCode2022.Day12
                 rowIndex++;
             }
 
-            maxX = allPoints.Max(x => x.Key.Item1);
-            maxY = allPoints.Max(x => x.Key.Item2);
+            var stepCount = 0;
+            usedSteps.Add(startPosition, stepCount);
 
-            var rootRoute = new Route() { Steps = 0, StartPosition = startPosition };
-            var neighbors = GetNeighbors(startPosition, rootRoute.UsedSteps);
-            var nextSteps = neighbors.Where(x => x.value == allPoints[startPosition] || x.value == allPoints[startPosition] + 1).ToList();
+            var nextSteps = GetNextSteps(startPosition);
 
-            GoNextSteps(rootRoute, nextSteps, startPosition);
-
-            routes.Add(rootRoute);
-
-            var bla = routes.Any(x => x.ReachedTarget);
-            ////Console.WriteLine($"MostTotal: {mostTotal}");
-        }
-
-        private void GoNextSteps(Route currentRoute, List<(int x, int y, int value)> nextSteps, (int x, int y) currentPosition)
-        {
-            if(currentRoute.Steps > 31) // test
+            while (true)
             {
-            }
-
-            if (nextSteps.Any(x => x.value == 27))
-            {
-                currentRoute.ReachedTarget = true;
-                return;
-            }
-
-            if (nextSteps.Count == 0)
-            {
-                return;
-            }
-            else if (nextSteps.Count == 1)
-            {
-                currentRoute.UsedSteps.Add(new(currentPosition.x, currentPosition.y));
-
-                currentRoute.Steps++;
-                currentPosition = new(nextSteps[0].x, nextSteps[0].y);
-
-                var neighbors = GetNeighbors(currentPosition, currentRoute.UsedSteps);
-                var newNextSteps = neighbors.Where(x => x.value == allPoints[currentPosition] || x.value == allPoints[currentPosition] + 1).ToList();
-
-                GoNextSteps(currentRoute, newNextSteps, currentPosition);
-            }
-            else
-            {
-                currentRoute.Steps++;
-
-                foreach (var step in nextSteps)
+                if (!nextSteps.Any())
                 {
-                    currentRoute.UsedSteps.Add(new(currentPosition.x, currentPosition.y));
+                    break;
+                }
 
-                    currentPosition = new(step.x, step.y);
+                if (nextSteps.Any(x => x == endPosition))
+                {
+                    stepCount++;
+                    break;
+                }
 
-                    var neighbors = GetNeighbors(currentPosition, currentRoute.UsedSteps);
-                    var newNextSteps = neighbors.Where(x => x.value == allPoints[currentPosition] || x.value == allPoints[currentPosition] + 1).ToList();
+                stepCount++;
 
-                    var newRoute = new Route() { Steps = currentRoute.Steps, StartPosition = currentPosition, UsedSteps = currentRoute.UsedSteps };
+                var testCnt = nextSteps.RemoveAll(x => usedSteps.ContainsKey(x) && usedSteps[x] <= stepCount);
 
-                    GoNextSteps(newRoute, newNextSteps, currentPosition);
+                foreach (var step in nextSteps.Distinct().ToList())
+                {
+                    usedSteps.Add(step, stepCount);
 
-                    routes.Add(newRoute);
+                    nextSteps.AddRange(GetNextSteps(step));
                 }
             }
+
+            Console.WriteLine($"StepCount: {stepCount}");
         }
 
-        private List<(int x, int y, int value)> GetNeighbors((int x, int y) currentPosition, List<(int x, int y)> usedSteps)
+        private List<(int x, int y)> GetNextSteps((int x, int y) currentPosition)
         {
-            var neighbors = new List<(int x, int y, int value)>();
+            var possibleNextSteps = new List<(int x, int y)>();
+            possibleNextSteps.Add((currentPosition.x - 1, currentPosition.y));
+            possibleNextSteps.Add((currentPosition.x + 1, currentPosition.y));
+            possibleNextSteps.Add((currentPosition.x, currentPosition.y - 1));
+            possibleNextSteps.Add((currentPosition.x, currentPosition.y + 1));
 
-            if (currentPosition.x - 1 > 0)
-            {
-                neighbors.Add((currentPosition.x - 1, currentPosition.y, allPoints[(currentPosition.x - 1, currentPosition.y)]));
-            }
-
-            if (currentPosition.x + 1 <= maxX)
-            {
-                neighbors.Add((currentPosition.x + 1, currentPosition.y, allPoints[(currentPosition.x + 1, currentPosition.y)]));
-            }
-
-            if (currentPosition.y - 1 > 0)
-            {
-                neighbors.Add((currentPosition.x, currentPosition.y - 1, allPoints[(currentPosition.x, currentPosition.y - 1)]));
-            }
-
-            if (currentPosition.y + 1 <= maxY)
-            {
-                neighbors.Add((currentPosition.x, currentPosition.y + 1, allPoints[(currentPosition.x, currentPosition.y + 1)]));
-            }
-
-            return neighbors.Where(n => !usedSteps.Contains((n.x, n.y))).ToList();
-        }
-
-        public class Route
-        {
-            public int Steps { get; set; }
-
-            public (int x, int y) StartPosition { get; set; }
-
-            public bool ReachedTarget = false;
-
-            public List<(int x, int y)> UsedSteps { get; set; } = new List<(int x, int y)>();
+            return possibleNextSteps.Where(x => allPoints.ContainsKey(x) && (allPoints[x] <= allPoints[currentPosition] + 1)).ToList();
         }
     }
 }
