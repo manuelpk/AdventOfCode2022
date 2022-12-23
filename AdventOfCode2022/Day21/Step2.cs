@@ -12,6 +12,8 @@ namespace AdventOfCode2022.Day21
         {
             var input = File.ReadAllLines("Day21/Step1Input.txt");
 
+            var allCodes = new Dictionary<string, object>();
+
             var resolvedCodes = new Dictionary<string, double>();
             var unresolvedCodes = new Dictionary<string, (string val1, string mathOperator, string val2)>();
             (string val1, string val2) rootOperation = (string.Empty, string.Empty);
@@ -21,24 +23,41 @@ namespace AdventOfCode2022.Day21
                 var key = i.Substring(0, 4);
                 var value = i.Substring(6);
 
-                if (key == "root")
+                if (double.TryParse(value, out double parsedValue))
                 {
-                    rootOperation = (value.Split(" ")[0], value.Split(" ")[2]);
+                    allCodes.Add(key, parsedValue);
                 }
-
-                if (key != "humn")
+                else
                 {
-                    if (double.TryParse(value, out double parsedValue))
+                    if (key == "humn")
                     {
-                        resolvedCodes.Add(key, parsedValue);
+                        value = "TOSET";
                     }
-                    else
-                    {
-                        var splitted = value.Split(" ");
+                    var splitted = value.Split(" ");
 
-                        unresolvedCodes.Add(key, (splitted[0], splitted[1], splitted[2]));
+                    var replacedValue = $"({value})";
+                    if (allCodes.ContainsKey(splitted[0]))
+                    {
+                        replacedValue = replacedValue.Replace(splitted[0], $"({allCodes[splitted[0]]})");
                     }
+
+                    if (allCodes.ContainsKey(splitted[2]))
+                    {
+                        replacedValue = replacedValue.Replace(splitted[2], $"({allCodes[splitted[2]]})");
+                    }
+
+
+                    allCodes.Add(key, replacedValue);
+
+                    //unresolvedCodes.Add(key, (splitted[0], splitted[1], splitted[2]));
                 }
+                //}
+            }
+
+            while (true)
+            {
+                //todo regex
+                //\w{4} ?
             }
 
             while (unresolvedCodes.Any())
